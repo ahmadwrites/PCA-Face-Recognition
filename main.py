@@ -45,23 +45,6 @@ def readImages(path):
     return images, classNames
 
 
-# Create data matrix from a list of images.
-def createDataMatrix(images):
-    print("Creating data matrix", end = " ... ")
-
-    numImages = len(images)
-    sz = images[0].shape
-    # Data matrix.
-    data = np.zeros((numImages, sz[0] * sz[1] * sz[2]), dtype = np.float32)
-    for i in range(0, numImages):
-        image = images[i].flatten()
-        # Each row get replaced with one flattened image.
-        data[i,:] = image
-
-    print("DONE")
-    return data
-
-
 if __name__ == '__main__':
     PATH = 'faces'
     NUM_EIGEN_FACES = 100
@@ -91,7 +74,11 @@ if __name__ == '__main__':
 
     print("Done.")
 
-    test_img = cv2.imread("test/test_bill.jpg")
+    '''
+    TEST IMAGE RECOGNITION 
+    '''
+
+    test_img = cv2.imread("test/ahmad2.jpg")
 
     print("Searching for face location...")
     detected_test_face = face_recognition.face_locations(test_img)
