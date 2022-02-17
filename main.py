@@ -56,21 +56,21 @@ if __name__ == '__main__':
     avg_face_vector = avg_face_vector.reshape(images.shape[0], 1)
     normalized_face_vector = images - avg_face_vector
 
-    print("Calculating PCA...")
+    print("Calculating PCA...", end=" ")
     covariance_matrix = np.cov(np.transpose(normalized_face_vector))
-    print(covariance_matrix)
+    # print(covariance_matrix)
 
     eigen_values, eigen_vectors = np.linalg.eig(covariance_matrix)
-    print(eigen_vectors.shape)
+    # print(eigen_vectors.shape)
 
     k_eigen_vectors = eigen_vectors[0:NUM_EIGEN_FACES, :]
-    print(k_eigen_vectors.shape)
+    # print(k_eigen_vectors.shape)
 
     eigen_faces = k_eigen_vectors.dot(np.transpose(normalized_face_vector))
-    print(eigen_faces.shape)
+    # print(eigen_faces.shape)
 
     weights = np.transpose(normalized_face_vector).dot(np.transpose(eigen_faces))
-    print(weights)
+    # print(weights)
 
     print("Done.")
 
@@ -78,10 +78,12 @@ if __name__ == '__main__':
     TEST IMAGE RECOGNITION 
     '''
 
-    test_img = cv2.imread("test/Bill_Gates_2014.jpg")
+    test_url = "test/mark2.jpg"
+    test_img = cv2.imread(test_url)
 
-    print("Searching for face location...")
+    print("Searching for face location...", end=" ")
     detected_test_face = face_recognition.face_locations(test_img)
+    print("Done.")
     if len(detected_test_face) == 0:
         print("No face detected.")
         sys.exit()
@@ -92,11 +94,26 @@ if __name__ == '__main__':
     test_normalized_face_vector = test_img - avg_face_vector
     test_weight = np.transpose(test_normalized_face_vector).dot(np.transpose(eigen_faces))
 
-    print("Determining match...")
-    print(np.linalg.norm(test_weight - weights, axis=1))
+    print("Determining match...", end=" ")
+    # print(np.linalg.norm(test_weight - weights, axis=1))
     index = np.argmin(np.linalg.norm(test_weight - weights, axis=1))
+    print("Done.")
 
     print(f"Matching image: {classNames[index]}")
+
+    '''
+    SHOW BOTH IMAGES
+    '''
+
+    test_img_show = cv2.imread(test_url)
+    test_img_show = cv2.resize(test_img_show, (300, 300))
+    cv2.imshow('Test Image', test_img_show)
+
+    myList = os.listdir(PATH)
+    result_img_show = cv2.imread(f"faces/{myList[index]}")
+    result_img_show = cv2.resize(result_img_show, (300, 300))
+    cv2.imshow('Match Image', result_img_show)
+    cv2.waitKey(0)
 
 
 
