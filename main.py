@@ -102,30 +102,30 @@ if __name__ == '__main__':
     while True:
         success, img = cap.read()
 
-        imgC = cv2.resize(img, (0, 0), None, 0.25, 0.25)
-        imgC = cv2.cvtColor(imgC, cv2.COLOR_BGR2RGB)
-
-        imgS = cv2.resize(img, (100, 100))
-        imgS = cv2.cvtColor(imgS, cv2.COLOR_RGB2GRAY)
-        imgS = imgS.reshape(10000, 1)
-        imgS_normalized_face_vector = imgS - avg_face_vector
-        imgS_weight = np.transpose(imgS_normalized_face_vector).dot(np.transpose(eigen_faces))
+        imgC = cv2.resize(img, (0, 0), None, .25, .25)
+        imgC = cv2.cvtColor(imgC, cv2.COLOR_BGR2GRAY)
 
         facesCurFrame = face_recognition.face_locations(imgC)
 
         for faceLoc in facesCurFrame:
+            imgS = cv2.resize(img, (100, 100))
+            imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2GRAY)
+            imgS = imgS.reshape(10000, 1)
+            imgS_normalized_face_vector = imgS - avg_face_vector
+            imgS_weight = np.transpose(imgS_normalized_face_vector).dot(np.transpose(eigen_faces))
             index = np.argmin(np.linalg.norm(imgS_weight - weights, axis=1))
 
-            if index:
-                name = classNames[index].upper()
-                print(name)
+            # print(index.size)
 
-                y1, x2, y2, x1 = faceLoc
-                y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
-                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 255, 0), cv2.FILLED)
-                cv2.putText(img, name, (x1 + 6, y2 - 6), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
+            name = classNames[index].upper()
+            # print(name)
+            y1, x2, y2, x1 = faceLoc
+            y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 255, 0), cv2.FILLED)
+            cv2.putText(img, name, (x1 + 6, y2 - 6), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
 
         cv2.imshow('Webcam', img)
         cv2.waitKey(1)
+
 
