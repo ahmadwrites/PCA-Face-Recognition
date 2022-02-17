@@ -46,7 +46,6 @@ def readImages(path):
 
 
 if __name__ == '__main__':
-    cap = cv2.VideoCapture(0)
     PATH = 'faces'
     NUM_EIGEN_FACES = 100
 
@@ -79,53 +78,25 @@ if __name__ == '__main__':
     TEST IMAGE RECOGNITION 
     '''
 
-    # test_img = cv2.imread("test/ahmad2.jpg")
-    #
-    # print("Searching for face location...")
-    # detected_test_face = face_recognition.face_locations(test_img)
-    # if len(detected_test_face) == 0:
-    #     print("No face detected.")
-    #     sys.exit()
-    #
-    # test_img = cv2.cvtColor(test_img, cv2.COLOR_RGB2GRAY)
-    # test_img = cv2.resize(test_img, (100, 100))
-    # test_img = test_img.reshape(10000, 1)
-    # test_normalized_face_vector = test_img - avg_face_vector
-    # test_weight = np.transpose(test_normalized_face_vector).dot(np.transpose(eigen_faces))
-    #
-    # print("Determining match...")
-    # print(np.linalg.norm(test_weight - weights, axis=1))
-    # index = np.argmin(np.linalg.norm(test_weight - weights, axis=1))
-    #
-    # print(f"Matching image: {classNames[index]}")
+    test_img = cv2.imread("test/Bill_Gates_2014.jpg")
 
-    while True:
-        success, img = cap.read()
+    print("Searching for face location...")
+    detected_test_face = face_recognition.face_locations(test_img)
+    if len(detected_test_face) == 0:
+        print("No face detected.")
+        sys.exit()
 
-        imgC = cv2.resize(img, (0, 0), None, .25, .25)
-        imgC = cv2.cvtColor(imgC, cv2.COLOR_BGR2GRAY)
+    test_img = cv2.cvtColor(test_img, cv2.COLOR_RGB2GRAY)
+    test_img = cv2.resize(test_img, (100, 100))
+    test_img = test_img.reshape(10000, 1)
+    test_normalized_face_vector = test_img - avg_face_vector
+    test_weight = np.transpose(test_normalized_face_vector).dot(np.transpose(eigen_faces))
 
-        facesCurFrame = face_recognition.face_locations(imgC)
+    print("Determining match...")
+    print(np.linalg.norm(test_weight - weights, axis=1))
+    index = np.argmin(np.linalg.norm(test_weight - weights, axis=1))
 
-        for faceLoc in facesCurFrame:
-            imgS = cv2.resize(img, (100, 100))
-            imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2GRAY)
-            imgS = imgS.reshape(10000, 1)
-            imgS_normalized_face_vector = imgS - avg_face_vector
-            imgS_weight = np.transpose(imgS_normalized_face_vector).dot(np.transpose(eigen_faces))
-            index = np.argmin(np.linalg.norm(imgS_weight - weights, axis=1))
+    print(f"Matching image: {classNames[index]}")
 
-            # print(index.size)
-
-            name = classNames[index].upper()
-            # print(name)
-            y1, x2, y2, x1 = faceLoc
-            y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
-            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 255, 0), cv2.FILLED)
-            cv2.putText(img, name, (x1 + 6, y2 - 6), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
-
-        cv2.imshow('Webcam', img)
-        cv2.waitKey(1)
 
 
