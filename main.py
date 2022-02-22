@@ -78,7 +78,7 @@ if __name__ == '__main__':
     TEST IMAGE RECOGNITION 
     '''
 
-    test_url = "test/mark2.jpg"
+    test_url = "test/random1.jpg"
     test_img = cv2.imread(test_url)
 
     print("Searching for face location...", end=" ")
@@ -96,6 +96,10 @@ if __name__ == '__main__':
 
     print("Determining match...", end=" ")
     # print(np.linalg.norm(test_weight - weights, axis=1))
+
+    # Euclidean distance
+    print((np.linalg.norm(test_weight - weights, axis=1)))
+
     index = np.argmin(np.linalg.norm(test_weight - weights, axis=1))
     print("Done.")
 
