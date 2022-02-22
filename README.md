@@ -12,8 +12,10 @@ euclidean distance and NCC in order to match it with the known faces.
 3. Display results
 
 ## Get Started
+```
 git clone https://github.com/ahmadwrites/PCA-Face-Recognition.git <folder_name>
 git chekckout pca
+```
 
 ## Branches 
 1. pca: Complete PCA implementation with comparing images
