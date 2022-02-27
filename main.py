@@ -81,7 +81,7 @@ def name():
        names.append(name)
 
 
-cap=cv2.VideoCapture('1.mp4')
+cap = cv2.VideoCapture(0)
 name()
 while True:
     flag,frame=cap.read()
