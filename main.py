@@ -1,123 +1,95 @@
 import cv2
 import numpy as np
-import face_recognition
 import os
-import sys
+# coding=utf-8
+import urllib
+import urllib.request
+import hashlib
+
+#load training file saved in training.py which is in .yml format
+recogizer=cv2.face.LBPHFaceRecognizer_create()
+recogizer.read('trainer/trainer.yml')
+names=[]
+warningtime = 0
+
+def md5(str):
+    import hashlib
+    m = hashlib.md5()
+    m.update(str.encode("utf8"))
+    return m.hexdigest()
+
+statusStr = {
+    '0': 'send unsucessfully',
+    '-1': 'index incomplete',
+    '-2': 'The server space is not supported. Please confirm that you support CURL or fsocket and contact your space provider to solve the problem or change the space',
+    '30': 'password wrong',
+    '40': 'account invaild',
+    '41': 'balance low',
+    '42': 'account update',
+    '43': 'IP address limit',
+    '50': 'Contain sensitive words'
+}
 
 
-def readImages(path):
-    print("Reading images from " + path, end = "...")
-    # Create array of array of images.
-    images = []
-    classNames = []
-    # List all files in the directory and read points from text files one by one.
-    for filePath in sorted(os.listdir(path)):
-        fileExt = os.path.splitext(filePath)[1]
-        if fileExt in [".jpg", ".jpeg"]:
+def warning():
+    smsapi = "http://api.smsbao.com/"
+    # account
+    user = '135****1900'
+    # psw
+    password = md5('*******')
+    # content
+    content = '[warning]\nreason: detect unknown people\nlocatiton:xxx'
+    # sent to
+    phone = '*******'
 
-            # Add to array of images.
-            imagePath = os.path.join(path, filePath)
-            im = cv2.imread(imagePath)
+    data = urllib.parse.urlencode({'u': user, 'p': password, 'm': phone, 'c': content})
+    send_url = smsapi + 'sms?' + data
+    response = urllib.request.urlopen(send_url)
+    the_page = response.read().decode('utf-8')
+    print(statusStr[the_page])
 
-            if im is None:
-                print("image:{} not read properly".format(imagePath))
-            else:
-                im = cv2.resize(im, (100, 100))
-                # Convert to grayscale
-                im = cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
-                # Reshape the shape to total pixels (10,000 because 100x100)
-                im = im.reshape(10000)
-                # Add image to list.
-                images.append(im)
-                classNames.append(os.path.splitext(filePath)[0])
+#image ready to recognize
+def face_detect_demo(img):
+    gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)#trun to gray
+    face_detector=cv2.CascadeClassifier('C:/Users/Ahmad/.virtualenvs/PCA_Project/Lib/site-packages/cv2/data/haarcascade_frontalface_alt2.xml')
+    face=face_detector.detectMultiScale(gray,1.1,5,cv2.CASCADE_SCALE_IMAGE,(100,100),(300,300))
+    #face=face_detector.detectMultiScale(gray)
+    for x,y,w,h in face:
+        cv2.rectangle(img,(x,y),(x+w,y+h),color=(0,0,255),thickness=2)
+        cv2.circle(img,center=(x+w//2,y+h//2),radius=w//2,color=(0,255,0),thickness=1)
+        # face recognition
+        ids, confidence = recogizer.predict(gray[y:y + h, x:x + w])
+        #print('lable's id:',ids,'confidence', confidence)
+        if confidence > 80:
+            global warningtime
+            warningtime += 1
+            if warningtime > 100:
+               warning()
+               warningtime = 0
+            cv2.putText(img, 'unkonw', (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 1)
+        else:
+            cv2.putText(img,str(names[ids-1]), (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 1)
+    cv2.imshow('result',img)
+    #print('bug:',ids)
 
-    numImages = int(len(images))
-
-    # Exit if no image found.
-    if numImages == 0:
-        print("No images found")
-        sys.exit(0)
-
-    images = np.asarray(images)
-    images = images.transpose()
-
-    print(str(numImages) + " files read.")
-    return images, classNames
-
-
-if __name__ == '__main__':
-    PATH = 'faces'
-    NUM_EIGEN_FACES = 100
-
-    # Read the images
-    images, classNames = readImages(PATH)
-
-    avg_face_vector = images.mean(axis=1)
-    avg_face_vector = avg_face_vector.reshape(images.shape[0], 1)
-    normalized_face_vector = images - avg_face_vector
-
-    print("Calculating PCA...", end=" ")
-    covariance_matrix = np.cov(np.transpose(normalized_face_vector))
-    # print(covariance_matrix)
-
-    eigen_values, eigen_vectors = np.linalg.eig(covariance_matrix)
-    # print(eigen_vectors.shape)
-
-    k_eigen_vectors = eigen_vectors[0:NUM_EIGEN_FACES, :]
-    # print(k_eigen_vectors.shape)
-
-    eigen_faces = k_eigen_vectors.dot(np.transpose(normalized_face_vector))
-    # print(eigen_faces.shape)
-
-    weights = np.transpose(normalized_face_vector).dot(np.transpose(eigen_faces))
-    # print(weights)
-
-    print("Done.")
-
-    '''
-    TEST IMAGE RECOGNITION 
-    '''
-
-    test_url = "test/random1.jpg"
-    test_img = cv2.imread(test_url)
-
-    print("Searching for face location...", end=" ")
-    detected_test_face = face_recognition.face_locations(test_img)
-    print("Done.")
-    if len(detected_test_face) == 0:
-        print("No face detected.")
-        sys.exit()
-
-    test_img = cv2.cvtColor(test_img, cv2.COLOR_RGB2GRAY)
-    test_img = cv2.resize(test_img, (100, 100))
-    test_img = test_img.reshape(10000, 1)
-    test_normalized_face_vector = test_img - avg_face_vector
-    test_weight = np.transpose(test_normalized_face_vector).dot(np.transpose(eigen_faces))
-
-    print("Determining match...", end=" ")
-    # print(np.linalg.norm(test_weight - weights, axis=1))
-
-    # Euclidean distance
-    print((np.linalg.norm(test_weight - weights, axis=1)))
-
-    index = np.argmin(np.linalg.norm(test_weight - weights, axis=1))
-    print("Done.")
-
-    print(f"Matching image: {classNames[index]}")
-
-    '''
-    SHOW BOTH IMAGES
-    '''
-
-    test_img_show = cv2.imread(test_url)
-    test_img_show = cv2.resize(test_img_show, (300, 300))
-    cv2.imshow('Test Image', test_img_show)
-
-    myList = os.listdir(PATH)
-    result_img_show = cv2.imread(f"faces/{myList[index]}")
-    result_img_show = cv2.resize(result_img_show, (300, 300))
-    cv2.imshow('Match Image', result_img_show)
-    cv2.waitKey(0)
+def name():
+    path = './faces/'
+    #names = []
+    imagePaths=[os.path.join(path,f) for f in os.listdir(path)]
+    for imagePath in imagePaths:
+       name = str(os.path.split(imagePath)[1].split('.',2)[1])
+       names.append(name)
 
 
-
+cap=cv2.VideoCapture('1.mp4')
+name()
+while True:
+    flag,frame=cap.read()
+    if not flag:
+        break
+    face_detect_demo(frame)
+    if ord(' ') == cv2.waitKey(10):
+        break
+cv2.destroyAllWindows()
+cap.release()
+print(names)
