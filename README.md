@@ -13,7 +13,7 @@ euclidean distance and NCC in order to match it with the known faces.
 
 ## Get Started
 ```
-git clone https://github.com/ahmadwrites/PCA-Face-Recognition.git <folder_name>
+git clone https://github.com/ahmadwrites/PCA-Face-Recognition.git 
 git chekckout pca
 ```
 
