@@ -78,7 +78,7 @@ if __name__ == '__main__':
     TEST IMAGE RECOGNITION 
     '''
 
-    test_url = "test/random1.jpg"
+    test_url = "test/Bill_Gates_2014.jpg"
     test_img = cv2.imread(test_url)
 
     print("Searching for face location...", end=" ")
