@@ -7,11 +7,11 @@ import sys
 
 def readImages(path):
     print("Reading images from " + path, end = "...")
-    # Create array of array of images.
+    # Create array of images.
     images = []
     classNames = []
     # List all files in the directory and read points from text files one by one.
-    for filePath in sorted(os.listdir(path)):
+    for filePath in os.listdir(path):
         fileExt = os.path.splitext(filePath)[1]
         if fileExt in [".jpg", ".jpeg"]:
 
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     TEST IMAGE RECOGNITION 
     '''
 
-    test_url = "test/Bill_Gates_2014.jpg"
+    test_url = "test/yasir.jpeg"
     test_img = cv2.imread(test_url)
 
     print("Searching for face location...", end=" ")
@@ -98,12 +98,21 @@ if __name__ == '__main__':
     # print(np.linalg.norm(test_weight - weights, axis=1))
 
     # Euclidean distance
-    print((np.linalg.norm(test_weight - weights, axis=1)))
+    # print((np.linalg.norm(test_weight - weights, axis=1)))
 
     index = np.argmin(np.linalg.norm(test_weight - weights, axis=1))
     print("Done.")
 
-    print(f"Matching image: {classNames[index]}")
+    # Match the detected index with the correct face/emotion
+    if len(classNames[index].split(" - ")) == 2:
+        matchingImage, matchingEmotion = classNames[index].split(" - ")
+        print(f"Matching face: {matchingImage}")
+        print(f"Matching emotion: {matchingEmotion}")
+    else:
+        print(f"Matching face: {classNames[index]}")
+
+    # print(classNames)
+    # print(index)
 
     '''
     SHOW BOTH IMAGES
@@ -114,6 +123,7 @@ if __name__ == '__main__':
     cv2.imshow('Test Image', test_img_show)
 
     myList = os.listdir(PATH)
+    # print(myList)
     result_img_show = cv2.imread(f"faces/{myList[index]}")
     result_img_show = cv2.resize(result_img_show, (300, 300))
     cv2.imshow('Match Image', result_img_show)
