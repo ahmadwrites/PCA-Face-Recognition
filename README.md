@@ -18,6 +18,6 @@ git chekckout pca
 ```
 
 ## Branches 
-1. pca: Complete PCA implementation with comparing images
-2. pca-camera: PCA implementation with open camera (less accurate)
-3. main: Skeleton for project 
+1. pca (Ahmad): Complete PCA implementation with comparing images
+2. yu-branch (Wu You): Implementation with webcam
+3. main (Yaoyu): Matplotlib eigenface implementation 
