@@ -46,8 +46,11 @@ def readImages(path):
 
 
 if __name__ == '__main__':
+    '''
+    INITIALIZATION
+    '''
     PATH = 'faces'
-    NUM_EIGEN_FACES = 100
+    NUM_EIGEN_FACES = 30
 
     # Read the images
     images, classNames = readImages(PATH)
@@ -60,10 +63,14 @@ if __name__ == '__main__':
     covariance_matrix = np.cov(np.transpose(normalized_face_vector))
     # print(covariance_matrix)
 
+    # Find eigen values and eigen vectors, then sort them
     eigen_values, eigen_vectors = np.linalg.eig(covariance_matrix)
+    idx = eigen_values.argsort()[::-1]
+    sorted_eigen_values = eigen_values[idx]
+    sorted_eigen_vectors = eigen_vectors[:, idx]
     # print(eigen_vectors.shape)
 
-    k_eigen_vectors = eigen_vectors[0:NUM_EIGEN_FACES, :]
+    k_eigen_vectors = sorted_eigen_vectors[0:NUM_EIGEN_FACES, :]
     # print(k_eigen_vectors.shape)
 
     eigen_faces = k_eigen_vectors.dot(np.transpose(normalized_face_vector))
@@ -78,7 +85,7 @@ if __name__ == '__main__':
     TEST IMAGE RECOGNITION 
     '''
 
-    test_url = "test/yasir.jpeg"
+    test_url = "test/test17.jpg"
     test_img = cv2.imread(test_url)
 
     print("Searching for face location...", end=" ")
@@ -111,6 +118,7 @@ if __name__ == '__main__':
     else:
         print(f"Matching face: {classNames[index]}")
 
+    print("Press any key on the photo window to quit the program.")
     # print(classNames)
     # print(index)
 
@@ -128,6 +136,4 @@ if __name__ == '__main__':
     result_img_show = cv2.resize(result_img_show, (300, 300))
     cv2.imshow('Match Image', result_img_show)
     cv2.waitKey(0)
-
-
 
